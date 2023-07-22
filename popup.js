@@ -10,9 +10,9 @@ function actualizarLista(){
     tipo: "Cargado",
   };
   chrome.runtime.sendMessage(mensaje, function (response) {
-    imprimirLista(response.array,response.tiempoT);
     paginasPop =response.array;
     tiempoT =response.tiempoT;
+    imprimirLista(response.array,response.tiempoT);
   });
 };
 //Imprimir lista de paginas
@@ -56,7 +56,6 @@ function imprimirLista(paginas,tiempoTotal) {
       var totalEnM = (tiempoTotal/60000);
       var porcentajeT = ((paginas[i].tiempo / 60000/totalEnM)*100).toFixed(2);
       textoTiempo = `${porcentajeT}%`;
-      console.log("pagina: "+paginas[i].url+" tiempo: "+paginas[i].tiempo/60000+" TiempoT: "+tiempoTotal/60000+" Porcentaje: "+porcentajeT)
     }
     var botonBorrar = document.createElement('img');
     botonBorrar.setAttribute('type', 'input');
@@ -185,8 +184,9 @@ botonOrden.addEventListener('click' , function() {
   };
   chrome.runtime.sendMessage(mensaje, function (response) {
     borrarLu();
-    imprimirLista(response.array,response.tiempoT);
+    actualizarLista();
   });
+  
 });
 // Cambiar de porcentaje O a porcentaje
 const botonPorcentaje = document.querySelector(".porcentaje");
@@ -201,7 +201,7 @@ const mensaje = {
 };
 chrome.runtime.sendMessage(mensaje, function (response) {
   borrarLu();
-  imprimirLista(response.array,response.tiempoT);
+  actualizarLista();
 });
 });
 // borrar Paginas

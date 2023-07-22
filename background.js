@@ -11,9 +11,7 @@ function hasExistingUrl(url) {
 // Guarda el array en formato JSON en el storage de chrome
 function guardarArray() {
   var paginasJSON = JSON.stringify(paginas);
-  var tiempoTJSON = JSON.stringify(tiempoTotal);
   chrome.storage.local.set({ key: paginasJSON });
-  chrome.storage.local.set({ time: tiempoTJSON });
 };
 // cuando see abre chrome se convierte el JSON al array paginas
 chrome.runtime.onStartup.addListener(function () {
@@ -25,12 +23,6 @@ function cargarArray() {
     var paginasJSON = result.key;
     if (paginasJSON) {
       paginas = JSON.parse(paginasJSON);
-    }
-  });
-  chrome.storage.local.get("time", function(resultT) {
-    var tiempoTJSON = resultT.time;
-    if (tiempoTJSON) {
-      tiempoTotal = JSON.parse(tiempoTJSON);
     }
   });
 };
@@ -58,28 +50,32 @@ function getCurrentTab(tab) {
     resolve(tab);
   });
 }
+//sumar tiempo total
+function sumarTiempoTotal(array){
+  tiempoTotal = 0;
+  for (let i = 0; i < array.length; i++){
+    tiempoTotal += array[i].tiempo;
+  }
+}
 // Actualiza el tiempo de visualizacion en el array
 function updateElapsedTime(tab) {
   if (activeTabId !== null && startTime !== null) {
     var endTime = new Date();
     var elapsedTime = endTime - startTime;
-    console.log("Tiempo total de pagina = "+elapsedTime);
     const paginaActiva = paginas.find((pagina) => pagina.url === activeTabId);
     if (paginaActiva) {
-      console.log("tiempo anterior 0 = "+paginaActiva.tiempoAnterior);
       if (paginaActiva.tiempo == 0) {
         paginaActiva.tiempo += elapsedTime;
-        tiempoTotal = paginaActiva.tiempo+tiempoTotal-paginaActiva.tiempoAnterior;
         paginaActiva.tiempoAnterior = elapsedTime;
       } else {
         paginaActiva.tiempo += elapsedTime;
-        console.log('tiempo 1 = '+paginaActiva.tiempo);
         if(paginaActiva.tiempo - paginaActiva.tiempoAnterior <= paginaActiva.tiempoAnterior ){
-          paginaActiva.tiempoAnterior = 0;
+          paginaActiva.tiempo = paginaActiva.tiempo;
+        }else {
+          paginaActiva.tiempo = paginaActiva.tiempo - paginaActiva.tiempoAnterior;
         }
-        paginaActiva.tiempo = paginaActiva.tiempo - paginaActiva.tiempoAnterior;
-        console.log('tiempo 2 = '+paginaActiva.tiempo);
-        tiempoTotal = paginaActiva.tiempo+tiempoTotal-paginaActiva.tiempoAnterior;
+        console.log("Tiempo Pagina Activa: "+paginaActiva.tiempo);
+        console.log("Tiempo Anterios: "+paginaActiva.tiempoAnterior);
         paginaActiva.tiempoAnterior = elapsedTime;
       }
     }
@@ -110,7 +106,6 @@ function inicioConteo(activeInfo) {
         updateElapsedTime(tab);
         activeTabId = finalUrl;
         startTime = new Date();
-        console.log("inicio" + startTime);
       }
     }
   }, 1000); // Retraso de 1 segundo para que no tenga problemas al pasar pestañas rápidamente
@@ -123,6 +118,7 @@ setInterval(updateElapsedTime, 10000);
 //enviar el array al scrip.js para imprimirlo en el html
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if(message.tipo === "Cargado"){
+    guardarArray();
     cargarArray();
     ordenarArray();
     const respuesta = {
@@ -131,6 +127,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     };
     sendResponse(respuesta);
   } else if (message.tipo === "Borrar"){
+    guardarArray();
     cargarArray();
     paginas.splice(message.dato,1)
     ordenarArray();
@@ -140,6 +137,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     };
     sendResponse(respuesta);
   }else if (message.tipo === "Ordenar"){
+    guardarArray();
     cargarArray();
     if(orden){
       orden=false;
@@ -153,8 +151,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     };
     sendResponse(respuesta);
   }else if (message.tipo === "Porcentaje"){
+    guardarArray();
     cargarArray();
     ordenarArray();
+    sumarTiempoTotal(paginas);
     const respuesta = {
       array: paginas,
       tiempoT: tiempoTotal
