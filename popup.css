@@ -1,0 +1,178 @@
+body {
+  background-color: #EDEDE9;
+}
+.titulo{
+  font-size: 20px;
+  margin: 0;
+  margin-top: 8px;
+  margin-bottom: -3px;
+}
+#busqueda{
+  border: none;
+  border-radius: 10px;
+  background-color: #fff;
+}
+.barraBusqueda{
+  position: absolute;
+  right: 6%;
+}
+p {
+  font-family: 'Roboto', sans-serif;
+}
+.contenedor {
+  width: 310px;
+  min-height: 100%;
+  max-height: 250px;
+  overflow-y: scroll;
+}
+.header {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+.listaUl {
+  display: flex;
+  flex-direction: column;
+  margin: 0%;
+  padding: 10px;
+  gap: 5px;
+  align-items: center;
+}
+li {
+  list-style: none;
+}
+.separador{
+  font-size: 23px;
+  margin: 0 4px 2px 4px; 
+}
+.pagina {
+  background-color: #E3D5CA;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 30px;
+  padding: 1px;
+  z-index: 2;
+}
+.pagina p {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+.borrar {
+  display: flex;
+  justify-content: center;
+  max-width: 15px;
+  height: auto;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.borrar:hover{
+  scale: 1.2;
+}
+.tiempo {
+  display: flex;
+  align-items: center;
+}
+.nombre {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+}
+.icono {
+  display: flex;
+  justify-content: center;
+  width: auto;
+  height: 17px;
+}
+.contenedor-nombre {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 130px;
+}
+.contenedor-tiempo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 80px;
+}
+.botones {
+  width: 100%;
+  display: flex;
+}
+.orden{
+  cursor: pointer;
+}
+.porcentaje{
+  cursor: pointer;
+}
+.cronometro{
+  max-width: 15px;
+  cursor: pointer;
+}
+.config-cronometro{
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-top: -10px;
+  border-radius: 10px;
+  width: 80%;
+  background-color: #A28371;
+  z-index: 1;
+  overflow: hidden;
+}
+.timers{
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 100%;
+}
+.timers input{
+  width: 38px;
+  height: 24px;
+  border-radius: 5px;
+}
+.divCronometro {
+  max-height: 100%;
+  display: block;
+  justify-content: center;
+  align-items: center;
+}
+.comenzar{
+  margin-top: 5px;
+  background-color: #E3D5CA;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 5px 5px 4px 0px rgba(0,0,0,0.40);
+}
+.comenzar:hover{
+  scale: 1.1;
+}
+  /* width */
+::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }

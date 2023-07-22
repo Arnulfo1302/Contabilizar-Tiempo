@@ -1,0 +1,34 @@
+{
+  "name": "Contabilizar Tiempo",
+  "version": "0.5.0",
+  "description": "Extension para contabilizar el tiempo en ventanas",
+  "permissions": ["storage", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "js": ["contentScript.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/bookmark.png",
+        "assets/play.png",
+        "assets/delete.png",
+        "assets/save.png"
+      ]
+    }
+  ],
+  "action": {
+    "default_icon": {
+      "16": "assets/ext-icon.png",
+      "24": "assets/ext-icon.png",
+      "32": "assets/ext-icon.png"
+    },
+    "default_title": "Contabilizar Tiempo",
+    "default_popup": "popup.html"
+  },
+  "manifest_version": 3
+}
