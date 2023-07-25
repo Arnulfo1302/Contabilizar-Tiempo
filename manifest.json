@@ -2,7 +2,7 @@
   "name": "Contabilizar Tiempo",
   "version": "0.5.0",
   "description": "Extension para contabilizar el tiempo en ventanas",
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "tabs","notifications"],
   "background": {
     "service_worker": "background.js"
   },
