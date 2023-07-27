@@ -12,7 +12,7 @@ function detenerContador() {
 }
 //iniciar contador
 function iniciarContador() {
-  contador = setInterval(actualizarLista, 5000);
+  contador = setInterval(actualizarValores, 5000);
 }
 // Actualziar cronometro
 function actualizarCronometro(i, tiempoH, tiempoM, paginas) {
@@ -25,31 +25,47 @@ function actualizarCronometro(i, tiempoH, tiempoM, paginas) {
   return { tiempoH: tiempoH, tiempoM: tiempoM };
 }
 //conseguir datos
-function conseguirDatos(){
+async function conseguirDatos() {
   const mensaje = {
     tipo: "Cargado",
   };
-  chrome.runtime.sendMessage(mensaje, function (response) {
-    paginasPop = response.array;
-    tiempoT = response.tiempoT;
-    return {array: response.array, tiempo:response.tiempoT};
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(mensaje, function (response) {
+      paginasPop = response.array;
+      tiempoT = response.tiempoT;
+      resolve({ array: response.array, tiempo: response.tiempoT, activa: response.activa });
+    });
   });
 };
-// Actualziar Valroes lista
-function actualziarValroes(){
+// Actualizar Valores lista solo modificando el text el html
+async function actualizarValores() {
   const listaMadre = document.querySelector(".listaUl");
-  if(listaMadre.firstChild){
-    const array = conseguirDatos(array);
-    const tiempo = conseguirDatos(tiempo);
+  if (listaMadre.firstChild) {
+    const datos = await conseguirDatos();
+    const array = datos.array;
+    const tiempo = datos.tiempo;
     const ls = parseInt(array.length);
-    for (let i = 0; i < ls; i++){
-      const pagina = document.querySelector(`.li-${i}`);
-      const temporizador = pagina.querySelector(".tiempo");
-      
+    for (let i = 0; i < ls; i++) {
+      console.log(datos.activa)
+      const pagina = array[i];
+      var anterior;
+      console.log(i+" Anterior = "+anterior);
+      console.log(i+" Actual = "+array[i].tiempo);
+      if(array[i].url == datos.activa){
+        if (array[i].tiempo > anterior){
+          actualizarLista();
+          break;
+        }
+      } 
+      const paginaHtml = document.querySelector(`.li-${i}`);
+      const temporizador = paginaHtml.querySelector(".tiempo");
+      temporizador.textContent = calcularTiempo(pagina, tiempo);
+      anterior = array[i].tiempo;
+      console.log(i+" 2 Anterior = "+anterior);
     }
   }
 };
-// Actualizar lista
+// Actualizar lista imprimiendola otra vez
 function actualizarLista() {
   let busquedaInput = document.querySelector("#busqueda").value;
   borrarLu();
@@ -62,24 +78,53 @@ function actualizarLista() {
     imprimirLista(response.array, response.tiempoT, busquedaInput);
   });
 }
+//Calcular Tiempo
+function calcularTiempo(pagina,tiempoTotal){
+  var minutos = 0;
+  var tiempo = "Minutos";
+  var cantidadTiempo = 0;
+  var restante = 0;
+  var textoTiempo = '';
+  if (Math.floor(pagina.tiempo / 60000) < 60) {
+    cantidadTiempo = (pagina.tiempo / 60000).toFixed(2);
+  } else if (Math.floor(pagina.tiempo / 60000) >= 60) {
+    tiempo = "Hora";
+    restante = (pagina.tiempo / 60000) % 60;
+    console.log(restante);
+    minutos = Math.floor(restante);
+    console.log(minutos);
+    cantidadTiempo = Math.floor(pagina.tiempo / 60000 / 60);
+    console.log(cantidadTiempo);
+    if (cantidadTiempo > 1) {
+      tiempo = "Horas";
+    }
+  }
+  if (!porcentaje) {
+    if (minutos != 0) {
+      textoTiempo = `${cantidadTiempo} ${tiempo} & ${minutos} Minutos`;
+    } else {
+      textoTiempo = `${cantidadTiempo} ${tiempo}`;
+    }
+  } else {
+    var totalEnM = tiempoTotal / 60000;
+    var porcentajeT = ((pagina.tiempo / 60000 / totalEnM) * 100).toFixed(
+      2
+    );
+    textoTiempo = `${porcentajeT}%`;
+  };
+  return textoTiempo;
+};
 //Imprimir lista de paginas
 function imprimirLista(paginas, tiempoTotal, busquedaInput) {
   console.log("tiempo total" + tiempoTotal);
   const ls = parseInt(paginas.length);
   const lu = document.querySelector(".listaUl");
-
   for (let i = 0; i < ls; i++) {
     const listaCronometro = document.createElement("DIV");
     listaCronometro.classList.add("lista-cronometro");
     const listas = document.createElement("LI");
     listas.classList.add("pagina");
     listas.classList.add(`li-${i}`);
-    var minutos = 0;
-    var tiempo = "Minutos";
-    var cantidadTiempo = 0;
-    var textoTiempo = "";
-    var horas = 0;
-    var restante = 0;
     var tiempoH = 0;
     var tiempoM = 0;
     var resultadoCronometro = actualizarCronometro(
@@ -90,33 +135,7 @@ function imprimirLista(paginas, tiempoTotal, busquedaInput) {
     );
     tiempoH = resultadoCronometro.tiempoH;
     tiempoM = resultadoCronometro.tiempoM;
-    if (Math.floor(paginas[i].tiempo / 60000) < 60) {
-      cantidadTiempo = (paginas[i].tiempo / 60000).toFixed(2);
-    } else if (Math.floor(paginas[i].tiempo / 60000) >= 60) {
-      tiempo = "Hora";
-      restante = (paginas[i].tiempo / 60000) % 60;
-      console.log(restante);
-      minutos = Math.floor(restante);
-      console.log(minutos);
-      cantidadTiempo = Math.floor(paginas[i].tiempo / 60000 / 60);
-      console.log(cantidadTiempo);
-      if (cantidadTiempo > 1) {
-        tiempo = "Horas";
-      }
-    }
-    if (!porcentaje) {
-      if (minutos != 0) {
-        textoTiempo = `${cantidadTiempo} ${tiempo} & ${minutos} Minutos`;
-      } else {
-        textoTiempo = `${cantidadTiempo} ${tiempo}`;
-      }
-    } else {
-      var totalEnM = tiempoTotal / 60000;
-      var porcentajeT = ((paginas[i].tiempo / 60000 / totalEnM) * 100).toFixed(
-        2
-      );
-      textoTiempo = `${porcentajeT}%`;
-    }
+    var textoTiempo = calcularTiempo(paginas[i],tiempoTotal);
     var botonBorrar = document.createElement("img");
     botonBorrar.setAttribute("type", "input");
     botonBorrar.classList.add("borrar");
@@ -278,8 +297,10 @@ const botonPorcentaje = document.querySelector(".porcentaje");
 botonPorcentaje.addEventListener("click", function () {
   if (porcentaje) {
     porcentaje = false;
+    botonPorcentaje.src = "./assets/percentage-svgrepo-com.svg";
   } else {
     porcentaje = true;
+    botonPorcentaje.src = "./assets/number-sign-110-svgrepo-com.svg";
   }
   const mensaje = {
     tipo: "Porcentaje",
@@ -302,10 +323,8 @@ function cronometroBoton(i) {
   const cronometroOpciones = listaLu.querySelector(`.c${i}`);
   if (cronometroOpciones.style.height == "0px") {
     cronometroOpciones.style.height = "50px";
-    detenerContador();
   } else {
     cronometroOpciones.style.height = "0px";
-    iniciarContador();
   }
 }
 // Comenzar cronometro

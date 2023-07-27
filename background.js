@@ -148,6 +148,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     const respuesta = {
       array: paginas,
       tiempoT: tiempoTotal,
+      activa: activeTabId
     };
     sendResponse(respuesta);
   } else if (message.tipo === "Borrar") {
@@ -196,8 +197,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 });
 //Mandar alerta
 function mandarAlerta(paginaU,tiempo,icono) {
-console.log("alerta");
-console.log(icono);
 const tiempoT = tiempo/60000
 const tiempoH = 0;
 const tiempoM = 0;
@@ -207,7 +206,7 @@ if(tiempoT > 60){
   tiempoM = Math.floor(tiempoT%60);
 }
 const paginaActiva = paginas.find((pagina) => pagina.url === paginaU);
-const alert = "";
+var alert = "";
 if(tiempoT < 60 && tiempoT > 1){
   alert = "Se completo "+tiempoT+" Minutos en "+paginaU;
 }else if(tiempoT <= 1){
