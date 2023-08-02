@@ -1,11 +1,17 @@
 var activeTabId = null;
 var startTime = null;
+var fechaInicio = null;
 var elapsedTime = 0;
 var paginas = [];
 var orden = true;
 var tiempoTotal = 0;
+var tiempo = 0;
+var multiplicador = 0;
 // Se verifica si el url ya existe en el array
 function hasExistingUrl(url) {
+  return paginas.some((pagina) => pagina.url === url);
+}
+function fechaExistente(url) {
   return paginas.some((pagina) => pagina.url === url);
 }
 // Guarda el array en formato JSON en el storage de chrome
@@ -40,9 +46,10 @@ function getCurrentTab(tab) {
         tiempo: 0,
         icono: tab.favIconUrl,
         tiempoAnterior: 0,
-        inicioCronometro:0,
-        tiempoAlerta:0,
-        cronometroActivado:false
+        inicioCronometro: 0,
+        tiempoAlerta: 0,
+        cronometroActivado: false,
+        fechas: [],
       };
       paginas.push(nuevaPagina);
     } else {
@@ -66,11 +73,44 @@ function sumarTiempoTotal(array) {
     tiempoTotal += array[i].tiempo;
   }
 }
+// Calcular tiempo Cuenta atras
+function cuentaAtras(paginaActiva, horas, endTime, startTime, dia) {
+  const fechas = paginaActiva.fechas;
+  for (let i = 0; i <= 7; i++) {
+    if(fechas.length < 8){
+      const fechaTiempo = {
+        fecha: horas+(dia*(i)),
+        tiempo: 0,
+      };
+      paginaActiva.fechas.push(fechaTiempo);
+    }
+    if(endTime.setHours(endTime.getHours()) >= fechas[i].fecha && endTime.setHours(endTime.getHours()) < fechas[i].fecha+dia){
+      if(i == 0){
+        fechas[i].tiempo = paginaActiva.tiempo - fechas[i].tiempo;
+      }else{
+        var aux =0;
+        for (let a = 0; a < i; a++){
+          aux += fechas[a].tiempo;
+        }
+        fechas[i].tiempo = paginaActiva.tiempo-aux;
+      }
+    }
+    if(fechas.length==8){
+      if(fechas[7].tiempo != 0){
+        fechas.length = 0;
+        break;
+      }
+    } 
+    }
+}
 // Actualiza el tiempo de visualizacion en el array
 function updateElapsedTime(tab) {
   if (activeTabId !== null && startTime !== null) {
     var endTime = new Date();
     var elapsedTime = endTime - startTime;
+    var horas = new Date();
+    //const dia = 24*60*60*1000;
+    const dia = 12000;
     const paginaActiva = paginas.find((pagina) => pagina.url === activeTabId);
     if (paginaActiva) {
       if (paginaActiva.tiempo == 0) {
@@ -84,24 +124,28 @@ function updateElapsedTime(tab) {
         ) {
           paginaActiva.tiempo = paginaActiva.tiempo;
         } else {
-          paginaActiva.tiempo =
-            paginaActiva.tiempo - paginaActiva.tiempoAnterior;
+          paginaActiva.tiempo = paginaActiva.tiempo - paginaActiva.tiempoAnterior;
         }
-        console.log("Tiempo Pagina Activa: " + paginaActiva.tiempo);
-        console.log("Tiempo Anterios: " + paginaActiva.tiempoAnterior);
         paginaActiva.tiempoAnterior = elapsedTime;
+        cuentaAtras(paginaActiva,horas.setHours(horas.getHours()),endTime,startTime,dia);
       }
-      if(paginaActiva.tiempoAlerta != 0){
-        console.log('es difernetes de 0');
-        if(paginaActiva.tiempo >= paginaActiva.inicioCronometro+paginaActiva.tiempoAlerta){
-          mandarAlerta(paginaActiva.url,paginaActiva.tiempoAlerta,paginaActiva.icono);
-          console.log('Se activa la funcion de mandar alerta');
+      if (paginaActiva.tiempoAlerta != 0) {
+        if (
+          paginaActiva.tiempo >=
+          paginaActiva.inicioCronometro + paginaActiva.tiempoAlerta
+        ) {
+          mandarAlerta(
+            paginaActiva.url,
+            paginaActiva.tiempoAlerta,
+            paginaActiva.icono
+          );
         }
       }
     }
   }
   guardarArray();
   cargarArray();
+  miarray = paginas
 }
 // Ordenar array
 function ordenarArray() {
@@ -129,6 +173,7 @@ function inicioConteo(activeInfo) {
         updateElapsedTime(tab);
         activeTabId = finalUrl;
         startTime = new Date();
+        
       }
     }
   }, 1000); // Retraso de 1 segundo para que no tenga problemas al pasar pestañas rápidamente
@@ -148,7 +193,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     const respuesta = {
       array: paginas,
       tiempoT: tiempoTotal,
-      activa: activeTabId
+      activa: activeTabId,
     };
     sendResponse(respuesta);
   } else if (message.tipo === "Borrar") {
@@ -185,51 +230,67 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       tiempoT: tiempoTotal,
     };
     sendResponse(respuesta);
-  }else if(message.tipo === "Cronometro"){
+  } else if (message.tipo === "Cronometro") {
     paginas[message.dato].tiempoAlerta = message.tiempo;
     paginas[message.dato].inicioCronometro = paginas[message.dato].tiempo;
     paginas[message.dato].cronometroActivado = true;
-  }else if(message.tipo === "Cancelar"){
+  } else if (message.tipo === "Cancelar") {
     paginas[message.dato].tiempoAlerta = 0;
     paginas[message.dato].inicioCronometro = 0;
     paginas[message.dato].cronometroActivado = false;
   }
 });
 //Mandar alerta
-function mandarAlerta(paginaU,tiempo,icono) {
-const tiempoT = tiempo/60000
-const tiempoH = 0;
-const tiempoM = 0;
+function mandarAlerta(paginaU, tiempo, icono) {
+  const tiempoT = tiempo / 60000;
+  const tiempoH = 0;
+  const tiempoM = 0;
 
-if(tiempoT > 60){
-  tiempoH = Math.floor(tiempoT/60);
-  tiempoM = Math.floor(tiempoT%60);
-}
-const paginaActiva = paginas.find((pagina) => pagina.url === paginaU);
-var alert = "";
-if(tiempoT < 60 && tiempoT > 1){
-  alert = "Se completo "+tiempoT+" Minutos en "+paginaU;
-}else if(tiempoT <= 1){
-  alert = "Se completo "+tiempoT+" Minuto en "+paginaU;
-}else if(tiempoT == 60){
-  alert = "Se completo "+tiempoT+" hora en "+paginaU;
-}else{
-  if(tiempoH = 1){
-    alert = "Se completo "+tiempoH+" Hora y"+tiempoM+" Minutos en "+paginaU;
-  }else if(tiempoH>1){
-    alert = "Se completo "+tiempoH+" Horas y"+tiempoM+" Minutos en "+paginaU;
+  if (tiempoT > 60) {
+    tiempoH = Math.floor(tiempoT / 60);
+    tiempoM = Math.floor(tiempoT % 60);
   }
-}
-chrome.notifications.create(
-  "Alerta",
-  {
+  const paginaActiva = paginas.find((pagina) => pagina.url === paginaU);
+  var alert = "";
+  if (tiempoT < 60 && tiempoT > 1) {
+    alert = "Se completo " + tiempoT + " Minutos en " + paginaU;
+  } else if (tiempoT <= 1) {
+    alert = "Se completo " + tiempoT + " Minuto en " + paginaU;
+  } else if (tiempoT == 60) {
+    alert = "Se completo " + tiempoT + " hora en " + paginaU;
+  } else {
+    if ((tiempoH = 1)) {
+      alert =
+        "Se completo " +
+        tiempoH +
+        " Hora y" +
+        tiempoM +
+        " Minutos en " +
+        paginaU;
+    } else if (tiempoH > 1) {
+      alert =
+        "Se completo " +
+        tiempoH +
+        " Horas y" +
+        tiempoM +
+        " Minutos en " +
+        paginaU;
+    }
+  }
+  chrome.notifications.create("Alerta", {
     type: "basic",
     iconUrl: `${icono}`,
-    title: 'Alerta',
-    message: `${alert}`
-  }
-);
-paginaActiva.tiempoAlerta = 0;
-paginaActiva.inicioCronometro = 0;
-paginaActiva.cronometroActivado = false;
-};
+    title: "Alerta",
+    message: `${alert}`,
+  });
+  paginaActiva.tiempoAlerta = 0;
+  paginaActiva.inicioCronometro = 0;
+  paginaActiva.cronometroActivado = false;
+}
+function getArraySizeInBytes(array) {
+  const serializedArray = JSON.stringify(array);
+  const sizeInBytes = new TextEncoder().encode(serializedArray).length;
+  return sizeInBytes;
+}
+var miarray = paginas;
+console.log("Tamaño del array en bytes:", getArraySizeInBytes(miarray));

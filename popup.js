@@ -2,10 +2,33 @@ var paginasPop = [];
 var tiempoT = 0;
 var porcentaje = false;
 let contador;
+var filtro = 999;
 document.addEventListener("DOMContentLoaded", function () {
   actualizarLista();
   iniciarContador();
 });
+//Detectar boton filtros
+const btnfiltro1 = document.querySelector(".btn-filtro1");
+const btnfiltro3 = document.querySelector(".btn-filtro3");
+const btnfiltro7 = document.querySelector(".btn-filtro7");
+const btnfiltrosAll = document.querySelector(".btn-filtros-all");
+btnfiltro1.addEventListener("click", function () {
+  filtrarPorDias(1);
+});
+btnfiltro3.addEventListener("click", function () {
+  filtrarPorDias(3);
+});
+btnfiltro7.addEventListener("click", function () {
+  filtrarPorDias(7);
+});
+btnfiltrosAll.addEventListener("click", function () {
+  filtrarPorDias(999);
+});
+//filtrar
+function filtrarPorDias(x) {
+  filtro = x;
+  actualizarLista();
+}
 // detiene el contador
 function detenerContador() {
   clearInterval(contador);
@@ -33,10 +56,14 @@ async function conseguirDatos() {
     chrome.runtime.sendMessage(mensaje, function (response) {
       paginasPop = response.array;
       tiempoT = response.tiempoT;
-      resolve({ array: response.array, tiempo: response.tiempoT, activa: response.activa });
+      resolve({
+        array: response.array,
+        tiempo: response.tiempoT,
+        activa: response.activa,
+      });
     });
   });
-};
+}
 // Actualizar Valores lista solo modificando el text el html
 async function actualizarValores() {
   const listaMadre = document.querySelector(".listaUl");
@@ -46,25 +73,21 @@ async function actualizarValores() {
     const tiempo = datos.tiempo;
     const ls = parseInt(array.length);
     for (let i = 0; i < ls; i++) {
-      console.log(datos.activa)
       const pagina = array[i];
       var anterior;
-      console.log(i+" Anterior = "+anterior);
-      console.log(i+" Actual = "+array[i].tiempo);
-      if(array[i].url == datos.activa){
-        if (array[i].tiempo > anterior){
+      if (array[i].url == datos.activa) {
+        if (array[i].tiempo > anterior) {
           actualizarLista();
           break;
         }
-      } 
+      }
       const paginaHtml = document.querySelector(`.li-${i}`);
       const temporizador = paginaHtml.querySelector(".tiempo");
       temporizador.textContent = calcularTiempo(pagina, tiempo);
       anterior = array[i].tiempo;
-      console.log(i+" 2 Anterior = "+anterior);
     }
   }
-};
+}
 // Actualizar lista imprimiendola otra vez
 function actualizarLista() {
   let busquedaInput = document.querySelector("#busqueda").value;
@@ -79,22 +102,67 @@ function actualizarLista() {
   });
 }
 //Calcular Tiempo
-function calcularTiempo(pagina,tiempoTotal){
+function calcularTiempo(pagina, tiempoTotal) {
   var minutos = 0;
   var tiempo = "Minutos";
   var cantidadTiempo = 0;
   var restante = 0;
-  var textoTiempo = '';
-  if (Math.floor(pagina.tiempo / 60000) < 60) {
-    cantidadTiempo = (pagina.tiempo / 60000).toFixed(2);
-  } else if (Math.floor(pagina.tiempo / 60000) >= 60) {
+  var textoTiempo = "";
+  var paginaTiempo =0;
+  var tiempoAtras = pagina.fechas;
+  var suma;
+  if (filtro != 999) {
+    if (filtro == 1) {
+      for (
+        let i = tiempoAtras.length-1;
+        i >= 0;
+        i--
+      ) {
+        if (tiempoAtras[i].tiempo != 0) {
+          paginaTiempo = tiempoAtras[i].tiempo;
+          console.log("datos "+paginaTiempo)
+          break;
+        }
+      }
+    } else if (filtro == 3) {
+      var tiempo3 = 0;
+      for (
+        let i = tiempoAtras.length-1;
+        i >= 0;
+        i--
+      ) {
+        if (tiempoAtras[i].tiempo != 0) {
+          paginaTiempo += tiempoAtras[i].tiempo;
+          tiempo3 += 1;
+        }
+        if (tiempo3 == 3) {
+          break;
+        }
+      }
+    } else if (filtro == 7) {
+      var tiempo7 = 0;
+      for (
+        let i = tiempoAtras.length-1;
+        i >= 0;
+        i--
+      ) {
+        console.log("esto es i "+i)
+        if (tiempoAtras[i].tiempo != 0) {
+          paginaTiempo += tiempoAtras[i].tiempo;
+          tiempo7 += 1;
+        }
+      }
+    }
+  } else {
+    paginaTiempo = pagina.tiempo;
+  }
+  if (Math.floor(paginaTiempo / 60000) < 60) {
+    cantidadTiempo = (paginaTiempo / 60000).toFixed(2);
+  } else if (Math.floor(paginaTiempo / 60000) >= 60) {
     tiempo = "Hora";
-    restante = (pagina.tiempo / 60000) % 60;
-    console.log(restante);
+    restante = (paginaTiempo / 60000) % 60;
     minutos = Math.floor(restante);
-    console.log(minutos);
-    cantidadTiempo = Math.floor(pagina.tiempo / 60000 / 60);
-    console.log(cantidadTiempo);
+    cantidadTiempo = Math.floor(paginaTiempo / 60000 / 60);
     if (cantidadTiempo > 1) {
       tiempo = "Horas";
     }
@@ -107,16 +175,13 @@ function calcularTiempo(pagina,tiempoTotal){
     }
   } else {
     var totalEnM = tiempoTotal / 60000;
-    var porcentajeT = ((pagina.tiempo / 60000 / totalEnM) * 100).toFixed(
-      2
-    );
+    var porcentajeT = ((paginaTiempo / 60000 / totalEnM) * 100).toFixed(2);
     textoTiempo = `${porcentajeT}%`;
-  };
+  }
   return textoTiempo;
-};
+}
 //Imprimir lista de paginas
 function imprimirLista(paginas, tiempoTotal, busquedaInput) {
-  console.log("tiempo total" + tiempoTotal);
   const ls = parseInt(paginas.length);
   const lu = document.querySelector(".listaUl");
   for (let i = 0; i < ls; i++) {
@@ -135,7 +200,7 @@ function imprimirLista(paginas, tiempoTotal, busquedaInput) {
     );
     tiempoH = resultadoCronometro.tiempoH;
     tiempoM = resultadoCronometro.tiempoM;
-    var textoTiempo = calcularTiempo(paginas[i],tiempoTotal);
+    var textoTiempo = calcularTiempo(paginas[i], tiempoTotal);
     var botonBorrar = document.createElement("img");
     botonBorrar.setAttribute("type", "input");
     botonBorrar.classList.add("borrar");
@@ -214,9 +279,9 @@ function imprimirLista(paginas, tiempoTotal, busquedaInput) {
     cancelar.addEventListener("click", function () {
       cronometroCancelar(i);
     });
-    const contando = document.createElement('img');
-    contando.src = './assets/Spinner-1s-200px.svg'
-    contando.classList.add('contando');
+    const contando = document.createElement("img");
+    contando.src = "./assets/Spinner-1s-200px.svg";
+    contando.classList.add("contando");
     contando.classList.add(`contando${i}`);
     if (tiempoH != 0 || tiempoM != 0) {
       cancelar.style.display = "flex";
@@ -244,17 +309,14 @@ function imprimirLista(paginas, tiempoTotal, busquedaInput) {
     listaCronometro.appendChild(configCronometro);
     lu.appendChild(listaCronometro);
   }
-  console.log(porcentaje);
   buscar(busquedaInput);
 }
 function borrarPagina(i) {
-  console.log("se borro");
   const mensaje = {
     tipo: "Borrar",
     dato: i,
   };
   chrome.runtime.sendMessage(mensaje, function (response) {
-    console.log(response.data);
     location.reload();
   });
 }
@@ -262,20 +324,16 @@ function borrarPagina(i) {
 const barraBusqueda = document.getElementById("buscadaDiv");
 barraBusqueda.addEventListener("input", function () {
   let busquedaInput = document.querySelector("#busqueda").value;
-  console.log(busquedaInput);
   buscar(busquedaInput);
 });
 //funcion busqueda
 function buscar(input) {
-  console.log(paginasPop);
   const ls = parseInt(paginasPop.length);
   for (let i = 0; i < ls; i++) {
     var pagina = document.querySelector(`.li-${i}`);
     if (!paginasPop[i]["url"].toLowerCase().includes(input)) {
       pagina.style.display = "none";
-      console.log("No tiene: " + paginasPop[i]["url"].toLowerCase());
     } else {
-      console.log("tiene: " + paginasPop[i]["url"].toLowerCase());
       pagina.style.display = "flex";
     }
   }
@@ -283,7 +341,6 @@ function buscar(input) {
 // Cambiar orden
 const botonOrden = document.querySelector(".orden");
 botonOrden.addEventListener("click", function () {
-  console.log("si entro");
   const mensaje = {
     tipo: "Ordenar",
   };
@@ -368,8 +425,6 @@ function cronometroCancelar(i) {
 chrome.runtime.onMessage.addEventListener(function (message) {
   if (message.tipo === "Alerta") {
     alert("¡" + message.dato + "!");
-    console.log(message.dato);
     sendResponse("hola");
   }
 });
-

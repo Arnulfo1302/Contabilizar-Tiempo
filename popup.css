@@ -17,9 +17,20 @@ body {
   justify-content: right;
   width: 100%;
 }
+.filtros{
+  margin-top: 10px;
+  
+}
+.filtros button{
+  cursor: pointer;
+}
+.filtros p{
+  margin: 0;
+  font-size: 10px;
+}
 .intercambio{
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 .intercambio img{
   transition: all 0.2s ease-in-out;
