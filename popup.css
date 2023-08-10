@@ -44,7 +44,7 @@ p {
 .contenedor {
   width: 340px;
   
-  height: 278px;
+  height: 275px;
   overflow-y: scroll;
 }
 .header {
@@ -79,6 +79,7 @@ li {
   padding: 1px;
   z-index: 2;
   width: 100%;
+  overflow: hidden;
 }
 .pagina p {
   display: flex;

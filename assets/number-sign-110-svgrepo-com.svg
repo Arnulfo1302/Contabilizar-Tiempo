@@ -1,19 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    
-    <title>number_sign [#110]</title>
-    <desc>Created with Sketch.</desc>
-    <defs>
-
-</defs>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Dribbble-Light-Preview" transform="translate(-382.000000, -7721.000000)" fill="#000000">
-            <g id="icons" transform="translate(56.000000, 160.000000)">
-                <path d="M332,7571 L336,7571 L336,7567 L332,7567 L332,7571 Z M342,7567 L342,7565 L338,7565 L338,7561 L336,7561 L336,7565 L332,7565 L332,7561 L330,7561 L330,7565 L326,7565 L326,7567 L330,7567 L330,7571 L326,7571 L326,7573 L330,7573 L330,7577 L332,7577 L332,7573 L336,7573 L336,7577 L338,7577 L338,7573 L342,7573 L342,7571 L338,7571 L338,7567 L342,7567 Z" id="number_sign-[#110]">
-
-</path>
-            </g>
-        </g>
-    </g>
+<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg fill="#000000" width="800px" height="800px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
+  <path d="M224,88H175.40381l8.46728-46.56934a8.00005,8.00005,0,1,0-15.74218-2.86132L159.1416,88H111.40381l8.46728-46.56934a8.00005,8.00005,0,1,0-15.74218-2.86132L95.1416,88H43.63672a8,8,0,0,0,0,16h48.5957l-8.72754,48H32a8,8,0,0,0,0,16H80.59619l-8.46728,46.56934a8.00005,8.00005,0,1,0,15.74218,2.86132L96.8584,168h47.73779l-8.46728,46.56934a8.00005,8.00005,0,1,0,15.74218,2.86132L160.8584,168h51.50488a8,8,0,1,0,0-16h-48.5957l8.72754-48H224a8,8,0,0,0,0-16Zm-76.49512,64H99.76758l8.72754-48h47.7373Z"/>
 </svg>

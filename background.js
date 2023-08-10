@@ -74,34 +74,28 @@ function sumarTiempoTotal(array) {
   }
 }
 // Calcular tiempo Cuenta atras
-function cuentaAtras(paginaActiva, horas, endTime, startTime, dia) {
+function cuentaAtras(paginaActiva, startTime, endTime, dia, elapsedTime) {
   const fechas = paginaActiva.fechas;
-  for (let i = 0; i <= 7; i++) {
-    if(fechas.length < 8){
+  if(fechas.length != 0){
+    if(fechas[fechas.length-1].conteo != 12 && endTime > fechas[fechas.length-1].fecha+4600){
+      fechas[fechas.length-1].conteo +=1;
+      //fechas[fechas.length-1].tiempo = paginaActiva.tiempo;
+    }else if(fechas[fechas.length-1].conteo == 12) {
       const fechaTiempo = {
-        fecha: horas+(dia*(i)),
-        tiempo: 0,
+        fecha: endTime,
+        tiempo: paginaActiva.tiempo,
+        conteo: 1,
       };
-      paginaActiva.fechas.push(fechaTiempo);
+      fechas.push(fechaTiempo);
     }
-    if(endTime.setHours(endTime.getHours()) >= fechas[i].fecha && endTime.setHours(endTime.getHours()) < fechas[i].fecha+dia){
-      if(i == 0){
-        fechas[i].tiempo = paginaActiva.tiempo - fechas[i].tiempo;
-      }else{
-        var aux =0;
-        for (let a = 0; a < i; a++){
-          aux += fechas[a].tiempo;
-        }
-        fechas[i].tiempo = paginaActiva.tiempo-aux;
-      }
-    }
-    if(fechas.length==8){
-      if(fechas[7].tiempo != 0){
-        fechas.length = 0;
-        break;
-      }
-    } 
-    }
+  }else{
+    const fechaTiempo = {
+      fecha: endTime,
+      tiempo: paginaActiva.tiempo,
+      conteo: 1,
+    };
+    fechas.push(fechaTiempo);
+  }
 }
 // Actualiza el tiempo de visualizacion en el array
 function updateElapsedTime(tab) {
@@ -110,7 +104,7 @@ function updateElapsedTime(tab) {
     var elapsedTime = endTime - startTime;
     var horas = new Date();
     //const dia = 24*60*60*1000;
-    const dia = 12000;
+    const dia = 60000;
     const paginaActiva = paginas.find((pagina) => pagina.url === activeTabId);
     if (paginaActiva) {
       if (paginaActiva.tiempo == 0) {
@@ -127,7 +121,7 @@ function updateElapsedTime(tab) {
           paginaActiva.tiempo = paginaActiva.tiempo - paginaActiva.tiempoAnterior;
         }
         paginaActiva.tiempoAnterior = elapsedTime;
-        cuentaAtras(paginaActiva,horas.setHours(horas.getHours()),endTime,startTime,dia);
+        cuentaAtras(paginaActiva,startTime.setHours(startTime.getHours()),endTime.setHours(endTime.getHours()),dia,elapsedTime);
       }
       if (paginaActiva.tiempoAlerta != 0) {
         if (

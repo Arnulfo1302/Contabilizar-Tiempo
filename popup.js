@@ -35,7 +35,7 @@ function detenerContador() {
 }
 //iniciar contador
 function iniciarContador() {
-  contador = setInterval(actualizarValores, 5000);
+  contador = setInterval(actualizarValores, 50000);
 }
 // Actualziar cronometro
 function actualizarCronometro(i, tiempoH, tiempoM, paginas) {
@@ -101,6 +101,7 @@ function actualizarLista() {
     imprimirLista(response.array, response.tiempoT, busquedaInput);
   });
 }
+
 //Calcular Tiempo
 function calcularTiempo(pagina, tiempoTotal) {
   var minutos = 0;
@@ -111,45 +112,55 @@ function calcularTiempo(pagina, tiempoTotal) {
   var paginaTiempo =0;
   var tiempoAtras = pagina.fechas;
   var suma;
+  console.log("calcular tiempooooooooooooooooooooo")
   if (filtro != 999) {
-    if (filtro == 1) {
+    const fechaHoy = new Date();
+    const fechaN = fechaHoy.setHours(fechaHoy.getHours());
+    const dia = 60000;
+    //const dia = 24*60*60*1000;
+    const n = tiempoAtras.length;
+    console.log("El filtro es = "+filtro)
+    console.log(tiempoAtras)
+    if (filtro == 1){
+      console.log("este es el lagro = "+n)
       for (
-        let i = tiempoAtras.length-1;
-        i >= 0;
-        i--
+        let i = 0;
+        i < tiempoAtras.length;
+        i++
       ) {
-        if (tiempoAtras[i].tiempo != 0) {
-          paginaTiempo = tiempoAtras[i].tiempo;
-          console.log("datos "+paginaTiempo)
+        console.log("este es el i = "+i)
+        console.log("este es el tiempo = "+tiempoAtras[i].fecha)
+        if(tiempoAtras[i].fecha >= fechaN-dia){
+          if(i !=0){
+            paginaTiempo = tiempoAtras[n-1].tiempo-tiempoAtras[i-1].tiempo;
+          console.log("Pagina tiempooooooooooooooooooooooooooooooooooooooooooooooooo = "+paginaTiempo);
           break;
+          }else{
+            paginaTiempo = tiempoAtras[n-1].tiempo;
+            break;
+          } 
         }
       }
     } else if (filtro == 3) {
-      var tiempo3 = 0;
       for (
-        let i = tiempoAtras.length-1;
-        i >= 0;
-        i--
-      ) {
-        if (tiempoAtras[i].tiempo != 0) {
-          paginaTiempo += tiempoAtras[i].tiempo;
-          tiempo3 += 1;
-        }
-        if (tiempo3 == 3) {
+        let i = 0;
+        i < tiempoAtras.length;
+        i++
+      ){
+        if(tiempoAtras[i].fecha >= fechaN-(dia*3)){
+          paginaTiempo = tiempoAtras[n-1].tiempo-tiempoAtras[i].tiempo;
           break;
         }
       }
     } else if (filtro == 7) {
-      var tiempo7 = 0;
       for (
-        let i = tiempoAtras.length-1;
-        i >= 0;
-        i--
+        let i = 0;
+        i < tiempoAtras.length;
+        i++
       ) {
-        console.log("esto es i "+i)
-        if (tiempoAtras[i].tiempo != 0) {
-          paginaTiempo += tiempoAtras[i].tiempo;
-          tiempo7 += 1;
+        if(tiempoAtras[i].fecha >= fechaN-(dia*7)){
+          paginaTiempo = tiempoAtras[n-1].tiempo-tiempoAtras[i].tiempo;
+          break;
         }
       }
     }
@@ -180,6 +191,52 @@ function calcularTiempo(pagina, tiempoTotal) {
   }
   return textoTiempo;
 }
+//Calcular tiempo total con filtro
+function tiempoTFiltro(){
+  if (filtro == 1){
+    console.log("este es el lagro = "+n)
+    for (
+      let i = 0;
+      i < tiempoAtras.length;
+      i++
+    ) {
+      console.log("este es el i = "+i)
+      console.log("este es el tiempo = "+tiempoAtras[i].fecha)
+      if(tiempoAtras[i].fecha >= fechaN-dia){
+        if(i !=0){
+          paginaTiempo = tiempoAtras[n-1].tiempo-tiempoAtras[i-1].tiempo;
+        console.log("Pagina tiempooooooooooooooooooooooooooooooooooooooooooooooooo = "+paginaTiempo);
+        break;
+        }else{
+          paginaTiempo = tiempoAtras[n-1].tiempo;
+          break;
+        } 
+      }
+    }
+  } else if (filtro == 3) {
+    for (
+      let i = 0;
+      i < tiempoAtras.length;
+      i++
+    ){
+      if(tiempoAtras[i].fecha >= fechaN-(dia*3)){
+        paginaTiempo = tiempoAtras[n-1].tiempo-tiempoAtras[i].tiempo;
+        break;
+      }
+    }
+  } else if (filtro == 7) {
+    for (
+      let i = 0;
+      i < tiempoAtras.length;
+      i++
+    ) {
+      if(tiempoAtras[i].fecha >= fechaN-(dia*7)){
+        paginaTiempo = tiempoAtras[n-1].tiempo-tiempoAtras[i].tiempo;
+        break;
+      }
+    }
+  }
+}
 //Imprimir lista de paginas
 function imprimirLista(paginas, tiempoTotal, busquedaInput) {
   const ls = parseInt(paginas.length);
@@ -187,6 +244,7 @@ function imprimirLista(paginas, tiempoTotal, busquedaInput) {
   for (let i = 0; i < ls; i++) {
     const listaCronometro = document.createElement("DIV");
     listaCronometro.classList.add("lista-cronometro");
+    listaCronometro.classList.add(`li-cr${i}`);
     const listas = document.createElement("LI");
     listas.classList.add("pagina");
     listas.classList.add(`li-${i}`);
@@ -330,7 +388,7 @@ barraBusqueda.addEventListener("input", function () {
 function buscar(input) {
   const ls = parseInt(paginasPop.length);
   for (let i = 0; i < ls; i++) {
-    var pagina = document.querySelector(`.li-${i}`);
+    var pagina = document.querySelector(`.li-cr${i}`);
     if (!paginasPop[i]["url"].toLowerCase().includes(input)) {
       pagina.style.display = "none";
     } else {
